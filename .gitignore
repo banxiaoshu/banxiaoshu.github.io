@@ -1,0 +1,7 @@
+# 部署产物
+.DS_Store
+Thumbs.db
+
+# 本地开发
+*.log
+.env*
