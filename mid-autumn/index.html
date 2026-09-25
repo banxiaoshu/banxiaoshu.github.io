@@ -1,0 +1,2023 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#071527">
+<meta name="format-detection" content="telephone=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<!-- 分享卡片：微信 / 朋友圈里链接的标题、描述与缩略图 -->
+<meta name="description" content="世界很快，但月亮很慢。愿你也慢下来，好好团圆。">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="中秋">
+<meta property="og:title" content="世界很快，但月亮很慢">
+<meta property="og:description" content="愿你也慢下来，好好团圆。点开，看看今晚的月亮。">
+<meta property="og:image" content="https://banxiaoshu.github.io/mid-autumn/share-cover.png">
+<meta property="og:image:width" content="1000">
+<meta property="og:image:height" content="1000">
+<meta property="og:url" content="https://banxiaoshu.github.io/mid-autumn/">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="image_src" href="https://banxiaoshu.github.io/mid-autumn/share-cover.png">
+<title>中秋 · 慢一点，月亮会等你</title>
+<style>
+/* ============================================================
+   配色（仅三种主色 + 中性文字色）
+   ============================================================ */
+:root{
+  --night:#0B1D3A;
+  --night-deep:#071527;
+  --night-soft:#122A4E;
+  --moon:#F5D98A;
+  --moon-light:#FDF3D5;
+  --moon-dim:#C9AE6E;
+  --red:#C0392B;
+
+  --ink:#E8EEF7;
+  --ink-dim:#9FB0C8;
+  --ink-faint:#64789A;
+
+  --serif:"Songti SC","STSong","Noto Serif SC","Source Han Serif SC",Georgia,serif;
+  --kai:"Kaiti SC","STKaiti","KaiTi","Songti SC","Noto Serif CJK SC",serif;
+
+  --moon-size:clamp(62px,17vw,88px);
+}
+
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;}
+html.locked,body.locked{overflow:hidden;}
+body.locked{position:fixed;inset:0;width:100%;}
+
+body{
+  background:var(--night-deep);
+  color:var(--ink);
+  font-family:var(--serif);
+  line-height:1.8;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+  overscroll-behavior-y:none;
+}
+
+/* ============================================================
+   固定场景层：夜空 / 星 / 云 / 月
+   ============================================================ */
+#scene{
+  position:fixed;inset:0;z-index:1;overflow:hidden;pointer-events:none;
+  background:
+    radial-gradient(120% 78% at 78% 4%, #16345e 0%, rgba(22,52,94,0) 58%),
+    radial-gradient(140% 90% at 50% 100%, #10264a 0%, rgba(16,38,74,0) 60%),
+    linear-gradient(180deg,#0d2244 0%, var(--night) 42%, var(--night-deep) 100%);
+}
+
+/* 星 */
+.stars{position:absolute;inset:0;}
+.star{
+  position:absolute;border-radius:50%;background:#E8EEF7;
+  animation:twinkle 5.5s ease-in-out infinite;
+}
+@keyframes twinkle{
+  0%,100%{opacity:var(--o1);}
+  50%{opacity:var(--o2);}
+}
+
+/* 云：三层纵深，远层大而淡，近层小而实 */
+.cloud{position:absolute;will-change:transform,opacity;}
+.cloud-shape{
+  display:block;width:100%;height:100%;border-radius:50%;
+  animation:drift 90s ease-in-out infinite alternate;
+}
+.cloud.far .cloud-shape{
+  background:radial-gradient(closest-side, rgba(122,160,208,.34), rgba(62,102,152,.14) 58%, rgba(30,60,100,0) 80%);
+  filter:blur(34px);
+}
+.cloud.mid .cloud-shape{
+  background:radial-gradient(closest-side, rgba(152,188,234,.40), rgba(82,124,178,.18) 58%, rgba(30,60,100,0) 80%);
+  filter:blur(24px);
+}
+.cloud.near .cloud-shape{
+  background:radial-gradient(closest-side, rgba(198,222,252,.34), rgba(98,140,192,.15) 56%, rgba(30,60,100,0) 80%);
+  filter:blur(14px);
+}
+@keyframes drift{
+  from{transform:translate3d(-5vw,0,0) scale(1);}
+  to{transform:translate3d(5vw,0,0) scale(1.08);}
+}
+
+/* 云散：第一幕（只动 transform / opacity，避免动画 filter 掉帧） */
+body.opened .cloud.veil{
+  transition:transform 4.4s cubic-bezier(.3,.72,.3,1), opacity 4.4s ease;
+  transform:translate3d(var(--dx),var(--dy),0) scale(1.7) rotate(var(--rot));
+  opacity:0;
+}
+
+/* 桂花：极稀疏、极慢，只为意境 */
+#petals{position:absolute;inset:0;}
+.petal{
+  position:absolute;top:0;left:0;
+  animation:fall linear infinite;
+  will-change:transform;
+}
+@keyframes fall{
+  0%{transform:translate3d(0,-16vh,0);}
+  30%{transform:translate3d(0,116vh,0);}
+  100%{transform:translate3d(0,116vh,0);}
+}
+.petal-sway{display:block;width:100%;height:100%;animation:swayP 7s ease-in-out infinite alternate;}
+@keyframes swayP{
+  from{transform:translate3d(-15px,0,0);}
+  to{transform:translate3d(15px,0,0);}
+}
+.petal-spin{display:block;width:100%;height:100%;animation:spinP 16s linear infinite;}
+@keyframes spinP{
+  from{transform:rotate(0deg);}
+  to{transform:rotate(360deg);}
+}
+.petal svg{display:block;width:100%;height:100%;}
+.petal svg ellipse{fill:rgba(245,217,138,.62);}
+
+/* 边角回纹：只做极淡的取景框，不抢主体 */
+.deco{position:absolute;inset:0;}
+.dec{
+  position:absolute;
+  width:clamp(58px,15vw,116px);height:clamp(58px,15vw,116px);
+  fill:none;stroke:rgba(245,217,138,.16);
+  stroke-width:1.4;stroke-linecap:square;
+}
+.dec.tl{top:0;left:0;}
+.dec.tr{top:0;right:0;transform:rotate(90deg);}
+.dec.br{bottom:0;right:0;transform:rotate(180deg);}
+.dec.bl{bottom:0;left:0;transform:rotate(270deg);}
+
+/* 月亮：视觉层在文字之下，点击热区在文字之上 */
+.moon-hold{
+  position:fixed;top:calc(5vh + env(safe-area-inset-top));right:7vw;
+  z-index:1;pointer-events:none;
+}
+.moon{
+  position:relative;display:block;
+  width:var(--moon-size);height:var(--moon-size);
+  border:none;background:transparent;padding:0;
+  border-radius:50%;
+  pointer-events:none;
+  opacity:.20;
+  transform:translateY(46vh) scale(.88);
+  filter:blur(16px);
+}
+.moon-hot{
+  position:fixed;z-index:4;
+  top:calc(5vh + env(safe-area-inset-top));right:7vw;
+  width:var(--moon-size);height:var(--moon-size);
+  border:none;background:transparent;padding:0;border-radius:50%;
+  pointer-events:none;cursor:pointer;
+  -webkit-appearance:none;appearance:none;
+}
+body.hot .moon-hot{pointer-events:auto;}
+body.opened .moon{
+  transition:
+    transform 3.8s cubic-bezier(.16,.84,.28,1) .6s,
+    opacity 2.8s ease .6s,
+    filter 2.8s ease .6s;
+  opacity:1;transform:none;filter:none;
+}
+.moon-disc{
+  position:absolute;inset:0;border-radius:50%;
+  background:radial-gradient(circle at 34% 28%,
+    #FFFBE9 0%, #FDF3D5 18%, #F5D98A 52%, #E2C67C 78%, #C9AE6E 100%);
+  box-shadow:
+    0 0 26px rgba(245,217,138,.55),
+    0 0 80px rgba(245,217,138,.26),
+    0 0 170px rgba(245,217,138,.13);
+}
+/* 月面斑驳：极淡的软斑，避免出现硬边圆点 */
+.moon-disc::after{
+  content:"";position:absolute;inset:0;border-radius:50%;
+  background:
+    radial-gradient(circle at 64% 36%, rgba(158,128,68,.13) 0 8%, rgba(158,128,68,0) 22%),
+    radial-gradient(circle at 40% 68%, rgba(158,128,68,.10) 0 11%, rgba(158,128,68,0) 26%),
+    radial-gradient(circle at 74% 74%, rgba(158,128,68,.07) 0 6%, rgba(158,128,68,0) 18%);
+}
+.moon-glow{
+  position:absolute;inset:-70%;border-radius:50%;
+  background:radial-gradient(closest-side, rgba(245,217,138,.30), rgba(245,217,138,0) 70%);
+  animation:moonPulse 6.5s ease-in-out infinite;
+}
+@keyframes moonPulse{
+  0%,100%{transform:scale(1);opacity:.65;}
+  50%{transform:scale(1.16);opacity:1;}
+}
+.moon-ring{
+  position:absolute;inset:-14%;border-radius:50%;
+  border:1px solid rgba(245,217,138,.34);
+  animation:ring 4.6s ease-out infinite;
+  opacity:0;
+}
+@keyframes ring{
+  0%{transform:scale(.86);opacity:0;}
+  30%{opacity:.5;}
+  100%{transform:scale(1.5);opacity:0;}
+}
+
+/* ============================================================
+   孔明灯层
+   ============================================================ */
+#lanterns{position:fixed;inset:0;z-index:2;pointer-events:none;overflow:hidden;}
+.lantern{
+  position:absolute;left:0;top:0;will-change:transform,opacity;
+  opacity:0;
+}
+.lantern .sway{animation:sway 5.5s ease-in-out infinite alternate;}
+@keyframes sway{
+  from{transform:translateX(-7px) rotate(-1.6deg);}
+  to{transform:translateX(7px) rotate(1.6deg);}
+}
+.lantern-body{
+  position:relative;
+  padding:12px 13px 15px;
+  border-radius:46% 46% 38% 38% / 30% 30% 70% 70%;
+  background:radial-gradient(72% 62% at 50% 26%, #FDF3D5 0%, #F5D98A 48%, #DDBF74 100%);
+  box-shadow:
+    0 0 16px rgba(245,217,138,.42),
+    0 0 44px rgba(245,217,138,.20),
+    inset 0 -7px 14px rgba(170,132,58,.34);
+}
+.lantern-body::after{
+  content:"";position:absolute;left:50%;bottom:-5px;width:7px;height:7px;
+  transform:translateX(-50%);border-radius:50%;
+  background:radial-gradient(circle,#FFF3C4,#E8A33C 70%,rgba(232,163,60,0));
+  box-shadow:0 0 10px rgba(255,210,120,.9);
+}
+.lantern-text{
+  display:block;
+  font-family:var(--serif);
+  color:#1c3350;
+  text-align:center;
+  font-size:9.5px;
+  line-height:1.62;
+  letter-spacing:.02em;
+}
+.lantern.amb{animation:ambFade 34s linear forwards;}
+@keyframes ambFade{
+  0%{opacity:0;}
+  9%{opacity:.40;}
+  74%{opacity:.40;}
+  100%{opacity:0;}
+}
+.lantern.mine{animation:mineFade 5.5s ease forwards;}
+@keyframes mineFade{
+  0%{opacity:0;}
+  9%{opacity:1;}
+  72%{opacity:1;}
+  100%{opacity:0;}
+}
+.lantern.amb .lantern-body{padding:10px 9px 12px;}
+.lantern.amb .lantern-text{font-size:8px;line-height:1.55;letter-spacing:0;}
+.lantern.mine .lantern-body{
+  padding:16px 18px 20px;
+  box-shadow:
+    0 0 26px rgba(245,217,138,.62),
+    0 0 78px rgba(245,217,138,.30),
+    inset 0 -8px 16px rgba(170,132,58,.34);
+}
+.lantern.mine .lantern-text{font-size:13.5px;line-height:1.7;}
+
+/* ============================================================
+   开场闸门
+   ============================================================ */
+#gate{
+  position:fixed;inset:0;z-index:50;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:26px;
+  background:radial-gradient(70% 50% at 50% 58%, rgba(11,29,58,.30), rgba(4,10,20,.62));
+  transition:opacity .7s ease;
+  cursor:pointer;
+}
+#gate.gone{opacity:0;pointer-events:none;}
+.gate-ring{
+  width:66px;height:66px;border-radius:50%;
+  border:1px solid rgba(245,217,138,.42);
+  position:relative;flex:0 0 auto;
+}
+.gate-ring::after{
+  content:"";position:absolute;inset:0;border-radius:50%;
+  border:1px solid rgba(245,217,138,.5);
+  animation:ring 3.4s ease-out infinite;
+}
+.gate-ring i{
+  position:absolute;inset:50%;width:7px;height:7px;margin:-3.5px 0 0 -3.5px;
+  border-radius:50%;background:var(--moon);box-shadow:0 0 14px rgba(245,217,138,.9);
+}
+.gate-text{
+  font-size:13.5px;letter-spacing:.34em;color:rgba(245,217,138,.82);
+  text-indent:.34em;
+}
+.gate-sub{
+  position:absolute;bottom:calc(7vh + env(safe-area-inset-bottom));
+  font-size:11.5px;letter-spacing:.22em;color:var(--ink-faint);
+}
+
+/* ============================================================
+   音乐按钮
+   ============================================================ */
+#musicBtn{
+  position:fixed;z-index:60;
+  top:calc(14px + env(safe-area-inset-top));
+  left:calc(14px + env(safe-area-inset-left));
+  width:40px;height:40px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  border:1px solid rgba(245,217,138,.26);
+  background:rgba(11,29,58,.52);
+  -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
+  cursor:pointer;padding:0;
+  -webkit-appearance:none;appearance:none;
+  transition:border-color .4s ease, background .4s ease;
+}
+#musicBtn svg{width:17px;height:17px;display:block;}
+#musicBtn .ico-on{display:none;}
+#musicBtn.on .ico-on{display:block;}
+#musicBtn.on .ico-off{display:none;}
+#musicBtn.on{border-color:rgba(245,217,138,.6);background:rgba(245,217,138,.10);}
+#musicBtn .stroke{stroke:rgba(245,217,138,.78);fill:none;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round;}
+#musicBtn .note{fill:rgba(245,217,138,.9);}
+
+/* ============================================================
+   内容
+   ============================================================ */
+#content{position:relative;z-index:3;opacity:0;}
+body.opened #content{opacity:1;transition:opacity 1.3s ease .8s;}
+
+.act{
+  position:relative;
+  min-height:100vh;min-height:100svh;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  padding:16vh 8vw calc(12vh + env(safe-area-inset-bottom));
+  text-align:center;
+}
+/* 正文后方一层极淡的暗角，保证飘灯经过时文字依然清晰 */
+.act::before{
+  content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;
+  background:radial-gradient(78% 54% at 50% 47%,
+    rgba(6,18,34,.82) 0%, rgba(6,18,34,.55) 50%, rgba(6,18,34,0) 80%);
+}
+.act-hero::before{background:none;}
+.act-hero{padding-top:20vh;}
+
+.eyebrow{
+  font-size:11.5px;letter-spacing:.4em;text-indent:.4em;
+  color:rgba(245,217,138,.55);margin-bottom:26px;
+  opacity:0;transform:translateY(10px);
+}
+.reveal.in .eyebrow{opacity:1;transform:none;transition:opacity 1s ease .08s,transform 1s ease .08s;}
+body.opened .act-hero .eyebrow{opacity:1;transform:none;transition:opacity 1.4s ease 1.05s,transform 1.4s ease 1.05s;}
+
+.hero-title{
+  font-weight:400;
+  font-size:clamp(21px,6.2vw,32px);
+  line-height:1.95;
+  letter-spacing:.07em;
+  opacity:0;transform:translateY(18px);
+}
+body.opened .hero-title{opacity:1;transform:none;transition:opacity 1.9s ease 1.5s,transform 1.9s cubic-bezier(.2,.7,.2,1) 1.5s;}
+.hero-title .l1{display:block;color:var(--ink);}
+.hero-title .l2{
+  display:block;margin-top:6px;
+  background:linear-gradient(180deg,#F9E9BC 0%,#F5D98A 34%,#E2C67C 68%,#EFD79B 100%);
+  -webkit-background-clip:text;background-clip:text;
+  color:transparent;-webkit-text-fill-color:transparent;
+}
+.hero-sub{
+  margin-top:22px;font-size:12px;letter-spacing:.4em;text-indent:.4em;
+  color:rgba(159,176,200,.75);
+  opacity:0;
+}
+body.opened .hero-sub{opacity:1;transition:opacity 1.6s ease 2.6s;}
+
+.scroll-hint{
+  position:absolute;bottom:calc(6vh + env(safe-area-inset-bottom));left:0;right:0;
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+  font-size:11px;letter-spacing:.3em;text-indent:.3em;color:var(--ink-faint);
+  opacity:0;
+}
+body.opened .scroll-hint{opacity:1;transition:opacity 1.6s ease 3.4s;}
+body.scrolled .scroll-hint{opacity:0;transition:opacity .6s ease;}
+.scroll-hint i{
+  display:block;width:1px;height:26px;
+  background:linear-gradient(180deg,rgba(245,217,138,.6),rgba(245,217,138,0));
+  animation:down 2.6s ease-in-out infinite;
+}
+@keyframes down{
+  0%,100%{transform:translateY(-4px);opacity:.35;}
+  50%{transform:translateY(5px);opacity:1;}
+}
+
+/* 标题组 */
+h2{
+  font-weight:400;
+  font-size:clamp(19px,5.4vw,26px);
+  letter-spacing:.1em;
+  color:var(--ink);
+  margin-bottom:18px;
+}
+.lead{
+  font-size:14px;line-height:2;color:var(--ink-dim);
+  max-width:30em;letter-spacing:.03em;
+  text-wrap:balance;
+}
+
+/* 书写区 */
+.write{
+  margin-top:38px;width:100%;max-width:26rem;
+  display:flex;align-items:stretch;gap:10px;
+}
+#bless{
+  flex:1 1 auto;min-width:0;
+  font-family:var(--serif);
+  font-size:16px;line-height:1.7;
+  color:var(--ink);
+  padding:14px 16px;
+  border:1px solid rgba(245,217,138,.22);
+  border-radius:12px;
+  background:rgba(11,29,58,.46);
+  -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
+  outline:none;
+  transition:border-color .4s ease,box-shadow .4s ease;
+}
+#bless::placeholder{color:var(--ink-faint);letter-spacing:.06em;}
+#bless:focus{
+  border-color:rgba(245,217,138,.5);
+  box-shadow:0 0 0 3px rgba(245,217,138,.08);
+}
+.btn{
+  font-family:var(--serif);
+  font-size:14.5px;letter-spacing:.16em;text-indent:.16em;
+  padding:14px 20px;
+  border-radius:12px;
+  border:1px solid rgba(245,217,138,.4);
+  background:linear-gradient(180deg,rgba(245,217,138,.16),rgba(245,217,138,.06));
+  color:var(--moon-light);
+  cursor:pointer;
+  flex:0 0 auto;
+  -webkit-appearance:none;appearance:none;
+  transition:transform .35s ease,border-color .35s ease,background .35s ease;
+}
+.btn:active{transform:scale(.97);border-color:rgba(245,217,138,.75);}
+.btn:disabled{opacity:.45;}
+.btn.ghost{
+  background:transparent;border-color:rgba(245,217,138,.28);
+  color:rgba(245,217,138,.86);
+}
+.btn.plain{
+  background:transparent;border-color:rgba(159,176,200,.28);
+  color:var(--ink-dim);letter-spacing:.1em;text-indent:.1em;
+  font-size:13px;padding:11px 16px;
+}
+
+.act-note{
+  margin-top:22px;font-size:12.5px;letter-spacing:.06em;
+  color:var(--ink-faint);min-height:1.8em;
+  transition:color .6s ease;
+}
+.act-note.hot{color:rgba(245,217,138,.8);}
+
+/* 第二幕：纯观赏，只给呼吸感 */
+.act-immerse{padding-bottom:calc(14vh + env(safe-area-inset-bottom));}
+.soft-hint{
+  margin-top:56px;
+  display:flex;flex-direction:column;align-items:center;gap:9px;
+  font-size:11px;letter-spacing:.3em;text-indent:.3em;
+  color:var(--ink-faint);
+}
+.soft-hint i{
+  display:block;width:1px;height:26px;
+  background:linear-gradient(180deg,rgba(245,217,138,.55),rgba(245,217,138,0));
+  animation:down 2.6s ease-in-out infinite;
+}
+/* 第四幕：写与生成合并，内容较高，收紧上留白 */
+.act-final{padding-top:13vh;justify-content:flex-start;}
+
+/* 心意卡 */
+#cardStage{margin-top:44px;width:100%;max-width:23rem;}
+.card-locked{
+  border:1px dashed rgba(245,217,138,.2);
+  border-radius:16px;
+  padding:56px 24px;
+  color:var(--ink-faint);font-size:13px;line-height:2;letter-spacing:.05em;
+}
+.card-locked span{display:block;font-size:22px;color:rgba(245,217,138,.32);margin-bottom:16px;}
+#cardImg{
+  display:block;width:100%;height:auto;border-radius:16px;
+  box-shadow:0 18px 60px rgba(0,0,0,.55), 0 0 0 1px rgba(245,217,138,.16);
+  opacity:0;transform:translateY(14px) scale(.98);
+  transition:opacity 1.2s ease,transform 1.2s cubic-bezier(.2,.7,.2,1);
+}
+#cardImg.in{opacity:1;transform:none;}
+.card-actions{
+  margin-top:20px;display:flex;flex-direction:column;align-items:center;gap:12px;
+}
+.card-hint{font-size:11.5px;letter-spacing:.12em;color:var(--ink-faint);}
+.card-hint b{color:rgba(245,217,138,.85);font-weight:400;}
+
+.foot{
+  padding:8vh 10vw calc(10vh + env(safe-area-inset-bottom));
+  text-align:center;
+  font-size:11.5px;line-height:2.4;letter-spacing:.16em;
+  color:var(--ink-faint);
+}
+.foot .seal{
+  display:inline-flex;align-items:center;justify-content:center;
+  margin-bottom:20px;
+  width:36px;height:36px;border-radius:5px;
+  background:var(--red);
+  color:#fff;font-family:var(--kai);font-size:12px;line-height:1;
+  letter-spacing:0;text-indent:0;
+  box-shadow:0 0 0 1px rgba(192,57,43,.35), 0 6px 20px rgba(192,57,43,.28);
+  opacity:.9;
+}
+/* 只在微信内置浏览器里出现，指引转发 */
+.foot .share-tip{
+  margin-top:30px;
+  padding-top:22px;
+  border-top:1px solid rgba(245,217,138,.12);
+  font-size:11px;letter-spacing:.14em;text-indent:.14em;
+  color:rgba(245,217,138,.46);
+}
+
+/* 显现动画 */
+.reveal{opacity:0;transform:translateY(22px);transition:opacity 1.15s ease,transform 1.15s cubic-bezier(.2,.7,.2,1);}
+.reveal.in{opacity:1;transform:none;}
+
+/* ============================================================
+   幕间过渡：一句轻轻浮现又消失的诗
+   ============================================================ */
+.verse{
+  min-height:32svh;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:13px;
+  padding:0 14vw;text-align:center;
+  opacity:0;transform:translateY(14px);
+  transition:opacity 1.5s ease,transform 1.5s cubic-bezier(.2,.7,.2,1);
+}
+.verse.on{opacity:1;transform:none;}
+.verse::before{
+  content:"";width:1px;height:28px;
+  background:linear-gradient(180deg,rgba(245,217,138,0),rgba(245,217,138,.34),rgba(245,217,138,0));
+}
+.verse span{
+  font-family:var(--kai);
+  font-size:clamp(15px,4.3vw,19px);
+  letter-spacing:.26em;text-indent:.26em;
+  color:rgba(245,217,138,.60);
+}
+.verse em{
+  font-style:normal;font-size:10.5px;
+  letter-spacing:.32em;text-indent:.32em;
+  color:var(--ink-faint);
+}
+
+/* ============================================================
+   月宫拾遗：可翻面的文化小卡
+   ============================================================ */
+.act-cards{padding-top:14vh;padding-bottom:10vh;}
+.cards{
+  margin-top:34px;width:100%;max-width:32rem;
+  display:grid;grid-template-columns:repeat(2,1fr);gap:12px;
+}
+.card{
+  position:relative;
+  padding:0;border:none;background:transparent;
+  aspect-ratio:3/4;min-height:198px;
+  perspective:900px;
+  -webkit-appearance:none;appearance:none;
+  cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+}
+.card-inner{
+  position:absolute;inset:0;display:block;
+  transform-style:preserve-3d;
+  transition:transform .9s cubic-bezier(.2,.75,.2,1);
+}
+.card.flipped .card-inner{transform:rotateY(180deg);}
+.card-face{
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:13px;
+  padding:16px 13px;
+  border-radius:14px;
+  border:1px solid rgba(245,217,138,.17);
+  background:linear-gradient(163deg, rgba(18,42,78,.60), rgba(11,29,58,.40));
+  -webkit-backface-visibility:hidden;backface-visibility:hidden;
+  transform:translateZ(0);
+}
+.card-face::after{
+  content:"";position:absolute;inset:6px;border-radius:10px;
+  border:1px solid rgba(245,217,138,.07);pointer-events:none;
+}
+.card-back{
+  transform:rotateY(180deg);
+  border-color:rgba(245,217,138,.26);
+  background:linear-gradient(163deg, rgba(20,46,84,.88), rgba(8,22,40,.76));
+  justify-content:center;
+}
+.card-front::before{
+  content:"";position:absolute;top:50%;left:50%;
+  width:104px;height:104px;border-radius:50%;
+  transform:translate(-50%,-74%);
+  background:radial-gradient(closest-side, rgba(245,217,138,.15), rgba(245,217,138,0) 72%);
+  pointer-events:none;
+}
+.card-art{
+  position:relative;
+  width:52px;height:52px;flex:0 0 auto;
+  fill:none;stroke:rgba(245,217,138,.74);
+  stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;
+}
+.card-title{
+  position:relative;
+  font-size:13.5px;letter-spacing:.16em;text-indent:.16em;
+  color:rgba(245,217,138,.86);
+}
+.card-title::after{
+  content:"";display:block;
+  width:20px;height:1px;margin:10px auto 0;
+  background:linear-gradient(90deg,rgba(245,217,138,0),rgba(245,217,138,.42),rgba(245,217,138,0));
+}
+.card-text{
+  font-size:11.5px;line-height:1.96;
+  color:var(--ink-dim);letter-spacing:.02em;
+  text-align:justify;text-align-last:left;
+}
+.card-back-title{
+  font-size:11px;letter-spacing:.2em;text-indent:.2em;
+  color:rgba(245,217,138,.46);
+  margin-bottom:2px;
+}
+.cards-hint{
+  margin-top:22px;font-size:11.5px;letter-spacing:.16em;
+  color:var(--ink-faint);
+}
+@media (hover:hover) and (pointer:fine){
+  .card:hover .card-inner{transform:rotateY(180deg);}
+  .card:hover .card-face{border-color:rgba(245,217,138,.34);}
+}
+@media (min-width:640px){
+  .cards{grid-template-columns:repeat(4,1fr);gap:14px;}
+  .card{aspect-ratio:2/3;}
+  .card-art{width:58px;height:58px;}
+  .card-text{font-size:12px;}
+}
+@media (max-width:360px){
+  .card-face{padding:12px 10px;gap:10px;}
+  .card-art{width:44px;height:44px;}
+  .card-text{font-size:11px;line-height:1.85;}
+  .card-title{font-size:12.5px;}
+}
+
+/* ============================================================
+   玉兔指针（仅桌面端）
+   ============================================================ */
+.rabbit{
+  position:fixed;left:0;top:0;z-index:200;
+  width:27px;height:27px;
+  pointer-events:none;opacity:0;
+  transition:opacity .35s ease;
+  will-change:transform;
+  filter:drop-shadow(0 1px 3px rgba(4,10,20,.9));
+}
+.rabbit.on{opacity:1;}
+.rabbit-in{
+  display:block;width:100%;height:100%;
+  transform:scale(calc(var(--s,1) * var(--f,1)), var(--s,1));
+  transition:transform .3s ease;
+}
+.rabbit.hot{--s:1.24;}
+.rabbit.move .rabbit-in{animation:bob .95s ease-in-out infinite;}
+@keyframes bob{
+  0%,100%{transform:translateY(0) scale(calc(var(--s,1) * var(--f,1)), var(--s,1));}
+  50%{transform:translateY(-2.6px) scale(calc(var(--s,1) * var(--f,1)), var(--s,1));}
+}
+.rabbit svg{display:block;width:100%;height:100%;}
+.rab-line{
+  fill:none;stroke:rgba(249,233,188,.94);
+  stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;
+}
+.rab-dot{fill:rgba(249,233,188,.94);stroke:none;}
+
+/* 移动端：点击处短暂冒出一只小兔 */
+.tap-rab{
+  position:fixed;z-index:200;width:22px;height:22px;
+  pointer-events:none;
+  filter:drop-shadow(0 1px 3px rgba(4,10,20,.9));
+  animation:tapRab .68s ease-out forwards;
+}
+.tap-rab svg{display:block;width:100%;height:100%;}
+@keyframes tapRab{
+  0%{opacity:0;transform:translate(-50%,-50%) scale(.62);}
+  24%{opacity:.92;transform:translate(-50%,-62%) scale(1);}
+  100%{opacity:0;transform:translate(-50%,-104%) scale(.9);}
+}
+@media (hover:hover) and (pointer:fine){
+  html.rab-on, html.rab-on *{cursor:none!important;}
+}
+
+/* ============================================================
+   弹窗 / 提示
+   ============================================================ */
+.modal{
+  position:fixed;inset:0;z-index:80;
+  display:flex;align-items:center;justify-content:center;
+  padding:24px;
+  background:rgba(4,10,20,.72);
+  -webkit-backdrop-filter:blur(7px);backdrop-filter:blur(7px);
+  opacity:0;pointer-events:none;
+  transition:opacity .5s ease;
+}
+.modal.show{opacity:1;pointer-events:auto;}
+
+.poem-card{
+  position:relative;width:100%;max-width:22rem;
+  padding:44px 30px 34px;
+  border-radius:18px;
+  background:
+    radial-gradient(120% 60% at 50% 0%, rgba(245,217,138,.10), rgba(245,217,138,0) 62%),
+    linear-gradient(165deg,#10254a 0%,var(--night) 58%,#08182e 100%);
+  border:1px solid rgba(245,217,138,.24);
+  box-shadow:0 26px 80px rgba(0,0,0,.6), inset 0 0 60px rgba(245,217,138,.04);
+  transform:translateY(16px) scale(.94);
+  transition:transform .7s cubic-bezier(.2,.8,.2,1);
+  text-align:center;
+  overflow:hidden;
+}
+.modal.show .poem-card{transform:none;}
+.poem-card::before,.poem-card::after{
+  content:"";position:absolute;width:22px;height:22px;
+  border:1px solid rgba(245,217,138,.4);
+}
+.poem-card::before{top:14px;left:14px;border-right:none;border-bottom:none;border-radius:4px 0 0 0;}
+.poem-card::after{bottom:14px;right:14px;border-left:none;border-top:none;border-radius:0 0 4px 0;}
+
+.poem-from{
+  font-size:11px;letter-spacing:.34em;text-indent:.34em;
+  color:rgba(245,217,138,.6);margin-bottom:26px;
+}
+.poem-text{
+  font-family:var(--kai);
+  font-size:clamp(21px,6vw,26px);
+  line-height:2.1;
+  letter-spacing:.1em;
+  background:linear-gradient(180deg,#FDF3D5 0%,#F5D98A 52%,#D9B96E 100%);
+  -webkit-background-clip:text;background-clip:text;
+  color:transparent;-webkit-text-fill-color:transparent;
+  text-shadow:0 0 30px rgba(245,217,138,.18);
+}
+.poem-line{
+  width:52px;height:1px;margin:28px auto;
+  background:linear-gradient(90deg,rgba(245,217,138,0),rgba(245,217,138,.55),rgba(245,217,138,0));
+}
+.poem-note{
+  font-size:12.5px;line-height:2.1;color:var(--ink-dim);letter-spacing:.03em;
+  margin-bottom:30px;
+  text-wrap:balance;
+}
+.poem-cloud{
+  position:absolute;left:50%;bottom:-26px;width:200px;height:60px;
+  transform:translateX(-50%);
+  background:radial-gradient(closest-side, rgba(245,217,138,.16), rgba(245,217,138,0) 72%);
+  filter:blur(10px);pointer-events:none;
+}
+
+.toast{
+  position:fixed;z-index:90;
+  left:50%;bottom:calc(9vh + env(safe-area-inset-bottom));
+  transform:translate(-50%,14px);
+  padding:11px 20px;
+  border-radius:100px;
+  font-size:12.5px;letter-spacing:.1em;
+  color:rgba(245,217,138,.92);
+  background:rgba(11,29,58,.88);
+  border:1px solid rgba(245,217,138,.24);
+  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+  opacity:0;pointer-events:none;
+  transition:opacity .5s ease,transform .5s ease;
+  white-space:nowrap;
+}
+.toast.show{opacity:1;transform:translate(-50%,0);}
+
+/* 小屏微调 */
+@media (max-height:700px){
+  .act{padding-top:13vh;padding-bottom:10vh;}
+  .write{margin-top:28px;}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.001s!important;transition-duration:.15s!important;}
+  body.opened .moon{transition:none;opacity:1;transform:none;filter:none;}
+  body.opened .hero-title{transition:none;opacity:1;transform:none;}
+}
+</style>
+</head>
+<body class="locked">
+
+<!-- 场景 -->
+<div id="scene">
+  <div class="stars" id="stars"></div>
+  <div id="clouds"></div>
+  <div id="petals"></div>
+  <div class="deco" aria-hidden="true">
+    <svg class="dec tl" viewBox="0 0 100 100"><path d="M2 2H98M2 2V98M15 15H78M15 15V78M28 28H58M28 28V58M41 41H44M41 41V44"/></svg>
+    <svg class="dec tr" viewBox="0 0 100 100"><path d="M2 2H98M2 2V98M15 15H78M15 15V78M28 28H58M28 28V58M41 41H44M41 41V44"/></svg>
+    <svg class="dec br" viewBox="0 0 100 100"><path d="M2 2H98M2 2V98M15 15H78M15 15V78M28 28H58M28 28V58M41 41H44M41 41V44"/></svg>
+    <svg class="dec bl" viewBox="0 0 100 100"><path d="M2 2H98M2 2V98M15 15H78M15 15V78M28 28H58M28 28V58M41 41H44M41 41V44"/></svg>
+  </div>
+</div>
+
+<!-- 月亮 -->
+<div class="moon-hold" id="moonHold">
+  <div class="moon" id="moon">
+    <span class="moon-glow"></span>
+    <span class="moon-ring"></span>
+    <span class="moon-disc"></span>
+  </div>
+</div>
+<button class="moon-hot" id="moonHot" aria-label="点一点月亮"></button>
+
+<!-- 孔明灯 -->
+<div id="lanterns"></div>
+
+<!-- 音乐 -->
+<button id="musicBtn" aria-label="背景音乐开关" aria-pressed="false">
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <g class="ico-off">
+      <path class="stroke" d="M9 16.5V6.8l7-1.6v9.6"/>
+      <circle class="stroke" cx="7" cy="17" r="2.4"/>
+      <circle class="stroke" cx="14" cy="15" r="2.4"/>
+      <path class="stroke" d="M3.2 3.2l17.6 17.6" opacity=".8"/>
+    </g>
+    <g class="ico-on">
+      <path class="stroke" d="M9 16.5V6.8l7-1.6v9.6"/>
+      <circle class="note" cx="7" cy="17" r="2.2"/>
+      <circle class="note" cx="14" cy="15" r="2.2"/>
+    </g>
+  </svg>
+</button>
+
+<!-- 开场 -->
+<div id="gate">
+  <span class="gate-ring"><i></i></span>
+  <p class="gate-text">轻触屏幕</p>
+  <p class="gate-sub">让云散开</p>
+</div>
+
+<main id="content">
+
+  <!-- 第一幕 -->
+  <section class="act act-hero">
+    <p class="eyebrow">壹 · 云开月出</p>
+    <h1 class="hero-title">
+      <span class="l1">世界很快，但月亮很慢</span>
+      <span class="l2">愿你也慢下来，好好团圆</span>
+    </h1>
+    <p class="hero-sub">中秋 · <span id="yearText">2026</span></p>
+    <div class="scroll-hint"><i></i>向下滑动</div>
+  </section>
+
+  <p class="verse"><span>月是故乡明</span><em>杜甫 · 月夜忆舍弟</em></p>
+
+  <!-- 第二幕 -->
+  <section class="act act-immerse" id="act2">
+    <div class="reveal">
+      <p class="eyebrow">贰 · 静夜观灯</p>
+      <h2>有人也在看着同一个月亮</h2>
+      <p class="lead">这些是旁人留下的句子，正一盏一盏飘过夜色。你不需要做什么，看着就好。</p>
+      <p class="soft-hint"><i></i>慢慢往下走</p>
+    </div>
+  </section>
+
+  <p class="verse"><span>今夜月明人尽望</span><em>王建 · 十五夜望月</em></p>
+
+  <!-- 第二幕之续：月宫拾遗 -->
+  <section class="act act-cards" id="actCards">
+    <div class="reveal">
+      <p class="eyebrow">贰 · 月宫旧事</p>
+      <h2>月宫拾遗</h2>
+      <p class="lead">月亮上不只有光，还有些没讲完的事。</p>
+    </div>
+
+    <div class="cards reveal">
+      <button class="card" type="button" aria-pressed="false" aria-label="嫦娥奔月，点击翻面">
+        <span class="card-inner">
+          <span class="card-face card-front">
+            <svg class="card-art" viewBox="0 0 96 96" aria-hidden="true">
+              <circle cx="74" cy="22" r="12"/>
+              <circle cx="42" cy="28" r="7"/>
+              <path d="M42 36C40 48 37 58 33 68"/>
+              <path d="M33 68C30 78 24 85 16 90"/>
+              <path d="M33 68C36 79 42 86 50 90"/>
+              <path d="M42 42C30 37 18 40 9 49"/>
+              <path d="M42 42C54 38 64 42 70 51"/>
+            </svg>
+            <span class="card-title">嫦娥奔月</span>
+          </span>
+          <span class="card-face card-back">
+            <span class="card-back-title">嫦娥奔月</span>
+            <span class="card-text">后羿求得不死之药，嫦娥吞下，身子一轻便飘向月宫。此后人间仰望，也算与她相见。</span>
+          </span>
+        </span>
+      </button>
+
+      <button class="card" type="button" aria-pressed="false" aria-label="玉兔捣药，点击翻面">
+        <span class="card-inner">
+          <span class="card-face card-front">
+            <svg class="card-art" viewBox="0 0 96 96" aria-hidden="true">
+              <ellipse cx="36" cy="60" rx="17" ry="13"/>
+              <circle cx="55" cy="48" r="8.5"/>
+              <path d="M51 41C48 28 50 20 53 17C56 21 56 33 54 42"/>
+              <path d="M58 41C59 27 62 20 65 18C67 23 64 34 61 42"/>
+              <circle cx="20" cy="58" r="4.5"/>
+              <path d="M70 38V68"/>
+              <path d="M60 68H82L79 79H63Z"/>
+              <circle class="rab-dot" cx="58" cy="47" r="1.2"/>
+            </svg>
+            <span class="card-title">玉兔捣药</span>
+          </span>
+          <span class="card-face card-back">
+            <span class="card-back-title">玉兔捣药</span>
+            <span class="card-text">月宫里有只白兔，终年握着玉杵，捣着长生之药。它捣了很久，久到成了月亮的一部分。</span>
+          </span>
+        </span>
+      </button>
+
+      <button class="card" type="button" aria-pressed="false" aria-label="吴刚伐桂，点击翻面">
+        <span class="card-inner">
+          <span class="card-face card-front">
+            <svg class="card-art" viewBox="0 0 96 96" aria-hidden="true">
+              <path d="M62 88C60 70 62 52 64 36"/>
+              <path d="M63 54C54 50 48 44 44 36"/>
+              <path d="M63 44C72 40 78 34 82 26"/>
+              <circle cx="42" cy="30" r="8"/>
+              <circle cx="82" cy="22" r="7"/>
+              <circle cx="62" cy="26" r="9"/>
+              <circle cx="26" cy="52" r="5"/>
+              <path d="M26 57C26 66 26 74 26 80"/>
+              <path d="M26 80L20 88"/>
+              <path d="M26 80L32 88"/>
+              <path d="M26 62C34 60 40 58 46 56"/>
+              <path d="M46 56V44"/>
+              <path d="M42 42C46 38 52 38 56 42C52 46 46 46 42 42Z"/>
+            </svg>
+            <span class="card-title">吴刚伐桂</span>
+          </span>
+          <span class="card-face card-back">
+            <span class="card-back-title">吴刚伐桂</span>
+            <span class="card-text">吴刚受罚砍伐月宫桂树，树随砍随合，永远砍不倒。桂花却年年落下，落满人间。</span>
+          </span>
+        </span>
+      </button>
+
+      <button class="card" type="button" aria-pressed="false" aria-label="食月饼，点击翻面">
+        <span class="card-inner">
+          <span class="card-face card-front">
+            <svg class="card-art" viewBox="0 0 96 96" aria-hidden="true">
+              <circle cx="48" cy="48" r="28"/>
+              <circle cx="48" cy="48" r="23" stroke-dasharray="2.6 6.4"/>
+              <circle cx="48" cy="48" r="6"/>
+              <path d="M48 32V40M48 56V64M32 48H40M56 48H64"/>
+            </svg>
+            <span class="card-title">食月饼</span>
+          </span>
+          <span class="card-face card-back">
+            <span class="card-back-title">食月饼</span>
+            <span class="card-text">月饼旧时叫小饼，本是祭月的供品。一刀切开分给谁，就是把团圆分给谁。</span>
+          </span>
+        </span>
+      </button>
+    </div>
+
+    <p class="cards-hint reveal">轻点卡片，翻过来看看</p>
+  </section>
+
+  <p class="verse"><span>桂子月中落</span><em>宋之问 · 灵隐寺</em></p>
+
+  <!-- 第三幕 -->
+  <section class="act" id="act3">
+    <div class="reveal">
+      <p class="eyebrow">叁 · 月下解语</p>
+      <h2>月亮上，一直挂着那句话</h2>
+      <p class="lead">一千年了，有人和你望着同一个月亮，想着差不多的事。</p>
+      <div style="margin-top:30px">
+        <button class="btn ghost" id="moonHintBtn">点一点月亮</button>
+      </div>
+    </div>
+  </section>
+
+  <p class="verse"><span>海上生明月</span><em>张九龄 · 望月怀远</em></p>
+
+  <!-- 第四幕：写祝福与生成心意卡，合成一步 -->
+  <section class="act act-final" id="act4">
+    <div class="reveal">
+      <p class="eyebrow">肆 · 写下心愿</p>
+      <h2>看到这里，你是否也想说点什么</h2>
+      <p class="lead">一句话就够。写下来，它会先飘向月亮，再变成一张卡片留给你。</p>
+      <div class="write">
+        <input id="bless" type="text" maxlength="30" placeholder="想说的话，写给今晚" autocomplete="off" enterkeyhint="send">
+        <button class="btn" id="send">点亮</button>
+      </div>
+      <p class="act-note" id="note4">&nbsp;</p>
+    </div>
+    <div id="cardStage">
+      <div class="card-locked" id="cardLocked"><span>·</span>还差你的一句话</div>
+      <img id="cardImg" alt="中秋心意卡" style="display:none">
+      <div class="card-actions" id="cardActions" style="display:none">
+        <button class="btn" id="saveBtn">保存图片</button>
+        <p class="card-hint">微信里可直接<b>长按图片</b>保存到相册</p>
+      </div>
+    </div>
+  </section>
+
+  <footer class="foot">
+    <div class="seal">中秋</div>
+    <p>月亮从不着急<br>愿你今晚也是</p>
+    <p class="share-tip" id="shareTip" hidden>点右上角「···」，可以转给惦记的人</p>
+  </footer>
+
+</main>
+
+<!-- 诗词弹窗 -->
+<div class="modal" id="poemModal">
+  <div class="poem-card">
+    <p class="poem-from">水调歌头 · 苏轼</p>
+    <p class="poem-text">但愿人长久<br>千里共婵娟</p>
+    <div class="poem-line"></div>
+    <p class="poem-note">千里共婵娟，此刻愿你，只属于自己和身边的人。</p>
+    <button class="btn plain" id="poemClose">收好了</button>
+    <div class="poem-cloud"></div>
+  </div>
+</div>
+
+<canvas id="cardCanvas" width="1080" height="1440" style="display:none"></canvas>
+
+<!-- 玉兔指针（桌面端） -->
+<div class="rabbit" id="rabbit" aria-hidden="true">
+  <div class="rabbit-in">
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path class="rab-line" d="M9.3 12.6C8.3 8.8 8.5 5.6 9.5 4.2C10.9 5.6 11.6 8.8 11.4 12.4"/>
+      <path class="rab-line" d="M13.7 12.6C13.5 8.8 14.3 5.8 15.5 4.6C16.5 6.2 16.3 9.2 15.3 12.8"/>
+      <path class="rab-line" d="M8.6 21.4C6.2 19.4 5.8 15.4 8.2 13.4C10.4 11.6 14.4 11.8 16.2 14.2C18 16.6 17.4 20.2 15 21.8"/>
+      <circle class="rab-line" cx="18.7" cy="19.5" r="1.9"/>
+      <circle class="rab-dot" cx="14.6" cy="15.2" r="0.85"/>
+    </svg>
+  </div>
+</div>
+
+<script>
+(function(){
+'use strict';
+
+var doc = document;
+var $ = function(id){ return doc.getElementById(id); };
+var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ============================================================
+   0. 年份
+   ============================================================ */
+$('yearText').textContent = String(new Date().getFullYear());
+
+/* ============================================================
+   1. 星空
+   ============================================================ */
+(function buildStars(){
+  var box = $('stars');
+  var n = window.innerWidth < 480 ? 58 : 90;
+  var frag = doc.createDocumentFragment();
+  for (var i = 0; i < n; i++){
+    var s = doc.createElement('i');
+    s.className = 'star';
+    var o1 = (0.08 + Math.random() * 0.32).toFixed(2);
+    var o2 = (Math.min(0.72, parseFloat(o1) + 0.3)).toFixed(2);
+    var size = (Math.random() < 0.84 ? 1 : 2);
+    s.style.cssText =
+      'left:' + (Math.random() * 100).toFixed(2) + '%;' +
+      'top:' + (Math.random() * 74).toFixed(2) + '%;' +
+      'width:' + size + 'px;height:' + size + 'px;' +
+      '--o1:' + o1 + ';--o2:' + o2 + ';' +
+      'animation-duration:' + (4 + Math.random() * 5).toFixed(1) + 's;' +
+      'animation-delay:-' + (Math.random() * 6).toFixed(1) + 's;';
+    frag.appendChild(s);
+  }
+  box.appendChild(frag);
+})();
+
+/* ============================================================
+   2. 云：远 / 中 / 近三层，尺寸、模糊、透明度、漂移速度逐层递进
+   ============================================================ */
+(function buildClouds(){
+  var box = $('clouds');
+
+  // tier: far | mid | near
+  // w: 宽(vw)  top: 顶部位置(vh)  dur: 漂移周期(s)
+  function make(tier, veil, w, left, top, dur, delay, op, hRatio){
+    var c = doc.createElement('div');
+    c.className = 'cloud ' + tier + (veil ? ' veil' : '');
+    c.style.width = w + 'vw';
+    c.style.height = (w * (hRatio || 0.56)) + 'vh';
+    c.style.left = left + 'vw';
+    c.style.top = top + 'vh';
+    c.style.opacity = op;
+    if (veil){
+      var dir = left < 46 ? -1 : 1;
+      c.style.setProperty('--dx', (dir * (34 + Math.random() * 44)).toFixed(1) + 'vw');
+      c.style.setProperty('--dy', (-12 + Math.random() * 24).toFixed(1) + 'vh');
+      c.style.setProperty('--rot', (Math.random() * 16 - 8).toFixed(1) + 'deg');
+      c.style.transitionDelay = (Math.random() * 0.5).toFixed(2) + 's';
+    }
+    var sp = doc.createElement('span');
+    sp.className = 'cloud-shape';
+    sp.style.animationDuration = dur + 's';
+    sp.style.animationDelay = '-' + delay + 's';
+    c.appendChild(sp);
+    box.appendChild(c);
+  }
+
+  // 远层：最大最淡，几乎只是背景里的一团气
+  make('far', true,  92, -10,  -6, 190, 60, .17);
+  make('far', false, 80,  38,  24, 210, 20, .14);
+  // 中层：开场遮月的主力
+  make('mid', true,  64,   4,   2, 138, 40, .27);
+  make('mid', true,  58,  44,  10, 150, 90, .24);
+  make('mid', false, 54,  16,  56, 144, 10, .20);
+  // 近层：小而略有形状，散云后靠它撑住纵深感
+  make('near', false, 42,  -8,  34,  96, 30, .22);
+  make('near', false, 36,  56,  62,  86, 70, .19);
+  make('near', false, 30,  24,  12,  78,  0, .16, 0.5);
+})();
+
+/* ============================================================
+   2b. 桂花：稀疏、极慢，平均同时只看得见两三朵
+   ============================================================ */
+var PETAL_SVG = '<svg viewBox="0 0 20 20" aria-hidden="true"><g>' +
+  '<ellipse cx="10" cy="6.4" rx="2.9" ry="4.3"/>' +
+  '<ellipse cx="13.7" cy="10" rx="4.3" ry="2.9"/>' +
+  '<ellipse cx="10" cy="13.6" rx="2.9" ry="4.3"/>' +
+  '<ellipse cx="6.3" cy="10" rx="4.3" ry="2.9"/>' +
+  '</g></svg>';
+
+(function buildPetals(){
+  var box = $('petals');
+  // 少而大：让人看清楚是一片桂花，不是雪点
+  var n = window.innerWidth < 480 ? 6 : 8;
+  var frag = doc.createDocumentFragment();
+  for (var i = 0; i < n; i++){
+    var size = 8 + Math.random() * 6;
+    var dur = 34 + Math.random() * 24;
+    var p = doc.createElement('div');
+    p.className = 'petal';
+    p.style.cssText =
+      'left:' + (Math.random() * 100).toFixed(2) + '%;' +
+      'width:' + size.toFixed(1) + 'px;height:' + size.toFixed(1) + 'px;' +
+      'opacity:' + (0.24 + Math.random() * 0.22).toFixed(2) + ';' +
+      'animation-duration:' + dur.toFixed(1) + 's;' +
+      'animation-delay:-' + (Math.random() * dur).toFixed(1) + 's;';
+    var sway = doc.createElement('div');
+    sway.className = 'petal-sway';
+    sway.style.animationDuration = (6 + Math.random() * 5).toFixed(1) + 's';
+    sway.style.animationDelay = '-' + (Math.random() * 6).toFixed(1) + 's';
+    var spin = doc.createElement('div');
+    spin.className = 'petal-spin';
+    spin.style.animationDuration = (13 + Math.random() * 12).toFixed(1) + 's';
+    spin.innerHTML = PETAL_SVG;
+    sway.appendChild(spin);
+    p.appendChild(sway);
+    frag.appendChild(p);
+  }
+  box.appendChild(frag);
+})();
+
+/* ============================================================
+   3. 开场
+   ============================================================ */
+var opened = false;
+function openScene(){
+  if (opened) return;
+  opened = true;
+  doc.documentElement.classList.remove('locked');
+  doc.body.classList.remove('locked');
+  $('gate').classList.add('gone');
+  // 强制重排后再加 opened，确保开场动画完整播放
+  void $('scene').offsetWidth;
+  doc.body.classList.add('opened');
+  setTimeout(function(){
+    var g = $('gate');
+    if (g && g.parentNode) g.parentNode.removeChild(g);
+  }, 900);
+  setTimeout(startAmbient, reduceMotion ? 200 : 2600);
+  // 月亮升到位之后再开放点击热区，避免升月途中误触
+  setTimeout(function(){ doc.body.classList.add('hot'); }, reduceMotion ? 400 : 4200);
+}
+$('gate').addEventListener('pointerdown', function(e){ e.preventDefault(); openScene(); }, {passive:false});
+$('gate').addEventListener('touchstart', function(e){ e.preventDefault(); openScene(); }, {passive:false});
+window.addEventListener('keydown', function(e){ if (!opened && (e.key === ' ' || e.key === 'Enter')) openScene(); });
+
+window.addEventListener('scroll', function(){
+  if (window.pageYOffset > 30) doc.body.classList.add('scrolled');
+  else doc.body.classList.remove('scrolled');
+}, {passive:true});
+
+/* ============================================================
+   4. 显现动画
+   ============================================================ */
+(function revealOn(){
+  var els = doc.querySelectorAll('.reveal');
+  if (!('IntersectionObserver' in window)){
+    for (var i = 0; i < els.length; i++) els[i].classList.add('in');
+    return;
+  }
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(en){
+      if (en.isIntersecting){ en.target.classList.add('in'); io.unobserve(en.target); }
+    });
+  }, {threshold: 0.16, rootMargin: '0px 0px -8% 0px'});
+  for (var j = 0; j < els.length; j++) io.observe(els[j]);
+})();
+
+/* 幕间诗句：滑进视野浮现，离开时淡淡消失（和其它元素不同，这里要保留观察） */
+(function verseFade(){
+  var vs = doc.querySelectorAll('.verse');
+  if (!vs.length) return;
+  if (!('IntersectionObserver' in window)){
+    for (var i = 0; i < vs.length; i++) vs[i].classList.add('on');
+    return;
+  }
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(en){
+      en.target.classList.toggle('on', en.isIntersecting);
+    });
+  }, {threshold: 0, rootMargin: '-16% 0px -16% 0px'});
+  for (var k = 0; k < vs.length; k++) io.observe(vs[k]);
+})();
+
+/* ============================================================
+   4b. 月宫拾遗：翻面卡片
+   桌面端靠悬停翻，触屏端靠点击翻转
+   ============================================================ */
+(function cardFlip(){
+  // 桌面端悬停即可翻面，这里始终绑定点击，兼容触屏与混合设备
+  var cards = doc.querySelectorAll('.card');
+  for (var i = 0; i < cards.length; i++){
+    (function(el){
+      el.addEventListener('click', function(){
+        var on = el.classList.toggle('flipped');
+        el.setAttribute('aria-pressed', on ? 'true' : 'false');
+      });
+    })(cards[i]);
+  }
+})();
+
+/* ============================================================
+   4c. 玉兔指针（桌面端）/ 触屏点击冒出小兔（移动端）
+   ============================================================ */
+(function rabbitCursor(){
+  var mq = window.matchMedia;
+  var fine = mq && mq('(hover:hover) and (pointer:fine)').matches;
+  var coarse = mq && mq('(pointer:coarse)').matches;
+  var rab = $('rabbit');
+  var RAB_INNER = rab ? rab.querySelector('svg').outerHTML : '';
+
+  if (fine && rab){
+    doc.documentElement.classList.add('rab-on');
+    var tx = window.innerWidth / 2, ty = window.innerHeight / 2;
+    var cx = tx, cy = ty, lastX = tx;
+    var started = false, raf = null, stopTimer = null;
+
+    function paint(){
+      rab.style.transform = 'translate3d(' + (cx - 3).toFixed(1) + 'px,' + (cy - 3).toFixed(1) + 'px,0)';
+    }
+    function loop(){
+      var dx = tx - cx, dy = ty - cy;
+      if (Math.abs(dx) < 0.15 && Math.abs(dy) < 0.15){
+        cx = tx; cy = ty; paint(); raf = null; return;
+      }
+      cx += dx * 0.22;
+      cy += dy * 0.22;
+      paint();
+      raf = requestAnimationFrame(loop);
+    }
+
+    window.addEventListener('mousemove', function(e){
+      tx = e.clientX; ty = e.clientY;
+      if (!started){ started = true; cx = tx; cy = ty; paint(); rab.classList.add('on'); }
+      var d = tx - lastX;
+      if (Math.abs(d) > 1.5){ rab.style.setProperty('--f', d > 0 ? '1' : '-1'); lastX = tx; }
+      rab.classList.add('move');
+      clearTimeout(stopTimer);
+      stopTimer = setTimeout(function(){ rab.classList.remove('move'); }, 170);
+      if (!raf) raf = requestAnimationFrame(loop);
+    }, {passive: true});
+
+    doc.addEventListener('mouseleave', function(){ rab.classList.remove('on'); });
+    doc.addEventListener('mouseenter', function(){ if (started) rab.classList.add('on'); });
+
+    // 悬停可点元素时略放大，补回 cursor:none 丢掉的提示
+    doc.addEventListener('mouseover', function(e){
+      var t = e.target;
+      var hot = !!(t && t.closest && t.closest('button,a,input,.card'));
+      rab.classList.toggle('hot', hot);
+    }, {passive: true});
+  }
+
+  if (coarse && RAB_INNER){
+    var lastTap = 0;
+    doc.addEventListener('touchstart', function(e){
+      var now = Date.now();
+      if (now - lastTap < 240) return;
+      var t = e.touches && e.touches[0];
+      if (!t) return;
+      lastTap = now;
+      var el = doc.createElement('div');
+      el.className = 'tap-rab';
+      el.style.left = t.clientX + 'px';
+      el.style.top = t.clientY + 'px';
+      el.innerHTML = RAB_INNER;
+      doc.body.appendChild(el);
+      setTimeout(function(){ if (el.parentNode) el.parentNode.removeChild(el); }, 780);
+    }, {passive: true});
+  }
+})();
+
+/* ============================================================
+   5. 孔明灯
+   ============================================================ */
+var EXAMPLES = [
+  '忙了很久了吧？今晚，什么都不用想，只需抬头看看月亮。',
+  '愿这个中秋，是你按下暂停键的理由。',
+  '慢一点，月亮会等你；惦记你的人，也在等你。',
+  '月亮从不着急，愿你今晚也是。'
+];
+var exIdx = 0;
+var liveCount = 0;
+var MAX_LIVE = 4;
+var lanternLayer = $('lanterns');
+
+function makeLantern(text, mine){
+  var el = doc.createElement('div');
+  el.className = 'lantern ' + (mine ? 'mine' : 'amb');
+  var sway = doc.createElement('div');
+  sway.className = 'sway';
+  if (!mine) sway.style.animationDuration = (4.6 + Math.random() * 3).toFixed(1) + 's';
+  var body = doc.createElement('div');
+  body.className = 'lantern-body';
+  var t = doc.createElement('span');
+  t.className = 'lantern-text';
+  t.textContent = text;
+  body.appendChild(t);
+  sway.appendChild(body);
+  el.appendChild(sway);
+  return el;
+}
+
+function flyAmbient(){
+  if (liveCount >= MAX_LIVE || doc.hidden) return;
+  var text = EXAMPLES[exIdx % EXAMPLES.length];
+  exIdx++;
+  var el = makeLantern(text, false);
+  var w = Math.round(Math.min(74, window.innerWidth * 0.19));
+  el.style.width = w + 'px';
+  el.style.animationDuration = '34s';
+  var h = w * 1.25;
+  // 只走画面最两侧的窄带，避开正文
+  var leftSide = Math.random() < 0.5;
+  var x = leftSide
+    ? 1 + Math.random() * 8
+    : 83 + Math.random() * 8;
+  var startX = (x / 100) * window.innerWidth;
+  var startY = window.innerHeight + 30;
+  var endY = -h - 160;
+  var drift = leftSide ? (10 + Math.random() * 26) : -(10 + Math.random() * 26);
+  var dur = 30 + Math.random() * 16;
+  el.style.animationDuration = dur.toFixed(1) + 's';
+
+  el.style.transform = 'translate3d(' + startX.toFixed(0) + 'px,' + startY.toFixed(0) + 'px,0)';
+  lanternLayer.appendChild(el);
+  liveCount++;
+  void el.offsetWidth;
+
+  requestAnimationFrame(function(){
+    el.style.transition = 'transform ' + dur.toFixed(1) + 's linear';
+    el.style.transform = 'translate3d(' + (startX + drift).toFixed(0) + 'px,' + endY.toFixed(0) + 'px,0)';
+  });
+
+  setTimeout(function(){
+    if (el.parentNode) el.parentNode.removeChild(el);
+    liveCount--;
+  }, (dur + 3) * 1000);
+}
+
+var ambOn = false, ambTimer = null;
+function startAmbient(){
+  if (ambOn) return;
+  ambOn = true;
+  var loop = function(){
+    if (!ambOn) return;
+    flyAmbient();
+    ambTimer = setTimeout(loop, 5200 + Math.random() * 4200);
+  };
+  ambTimer = setTimeout(loop, 900);
+}
+function stopAmbient(){
+  ambOn = false;
+  if (ambTimer){ clearTimeout(ambTimer); ambTimer = null; }
+}
+
+function flyMine(text, done){
+  var el = makeLantern(text, true);
+  var maxW = Math.min(220, window.innerWidth * 0.56);
+  el.style.width = maxW + 'px';
+  lanternLayer.appendChild(el);
+
+  var w = el.offsetWidth, h = el.offsetHeight;
+  var startX = (window.innerWidth - w) / 2;
+  var startY = window.innerHeight - h - 40;
+
+  var rect = $('moon').getBoundingClientRect();
+  var endX = rect.left + rect.width / 2 - w / 2;
+  var endY = rect.top + rect.height / 2 - h / 2;
+
+  el.style.transform = 'translate3d(' + startX.toFixed(0) + 'px,' + startY.toFixed(0) + 'px,0)';
+  void el.offsetWidth;
+
+  var dur = 5.4;
+  requestAnimationFrame(function(){
+    el.style.transition = 'transform ' + dur + 's cubic-bezier(.34,.02,.52,.99)';
+    el.style.transform = 'translate3d(' + endX.toFixed(0) + 'px,' + endY.toFixed(0) + 'px,0) scale(.34)';
+  });
+
+  setTimeout(function(){
+    if (el.parentNode) el.parentNode.removeChild(el);
+    if (typeof done === 'function') done();
+  }, (dur + 0.6) * 1000);
+}
+
+/* ============================================================
+   6. 提示
+   ============================================================ */
+var toastEl = null, toastTimer = null;
+function toast(msg){
+  if (!toastEl){
+    toastEl = doc.createElement('div');
+    toastEl.className = 'toast';
+    doc.body.appendChild(toastEl);
+  }
+  toastEl.textContent = msg;
+  toastEl.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function(){ toastEl.classList.remove('show'); }, 2600);
+}
+
+/* ============================================================
+   7. 第四幕：写下祝福 → 化灯 → 生成心意卡（一气呵成）
+   ============================================================ */
+var blessText = '';
+var sent = false;
+var input = $('bless');
+var note4 = $('note4');
+
+function submitBless(){
+  var v = input.value.replace(/\s+/g, ' ').trim();
+  if (!v){
+    note4.textContent = '写一句吧，很短也可以。';
+    note4.classList.remove('hot');
+    input.focus();
+    return;
+  }
+  if (sent) return;
+  sent = true;
+  blessText = v;
+  $('send').disabled = true;
+  input.blur();
+  input.readOnly = true;
+  $('cardLocked').style.display = 'none';
+  note4.textContent = '它正飘向月亮。';
+  note4.classList.add('hot');
+
+  // 一、文字先化灯升空，和第一幕的月亮呼应
+  flyMine(v);
+  toggleMusicIfOn();
+
+  // 二、卡片先在后台画好，但不急着露面
+  setTimeout(function(){ buildCard(v); }, 1300);
+
+  // 三、灯升到半空，卡片接上
+  setTimeout(function(){
+    note4.textContent = '它变成了一张卡片，是给你的。';
+    revealCard();
+  }, 2600);
+
+  // 四、轻轻把卡片送到视线里
+  setTimeout(function(){
+    var stage = $('cardStage');
+    if (stage && stage.scrollIntoView){
+      stage.scrollIntoView({behavior: reduceMotion ? 'auto' : 'smooth', block: 'center'});
+    }
+  }, 2950);
+}
+
+$('send').addEventListener('click', submitBless);
+input.addEventListener('keydown', function(e){
+  if (e.key === 'Enter'){ e.preventDefault(); submitBless(); }
+});
+
+/* 音乐已开时，写祝福会有一声轻响 */
+function toggleMusicIfOn(){ if (Music && Music.isOn()) Music.chime(); }
+
+/* ============================================================
+   8. 第三幕：诗词彩蛋
+   ============================================================ */
+var poemModal = $('poemModal');
+function openPoem(){
+  poemModal.classList.add('show');
+}
+function closePoem(){
+  poemModal.classList.remove('show');
+}
+$('moonHot').addEventListener('click', function(e){ e.preventDefault(); openPoem(); });
+$('moonHintBtn').addEventListener('click', function(e){ e.preventDefault(); openPoem(); });
+$('poemClose').addEventListener('click', closePoem);
+poemModal.addEventListener('click', function(e){ if (e.target === poemModal) closePoem(); });
+doc.addEventListener('keydown', function(e){ if (e.key === 'Escape') closePoem(); });
+
+/* ============================================================
+   9. 第四幕：心意卡
+   ============================================================ */
+var FONT_KAI = '"Kaiti SC","STKaiti","KaiTi","Songti SC","Noto Serif CJK SC",serif';
+var FONT_SERIF = '"Songti SC","STSong","Noto Serif SC","Songti TC",serif';
+
+function roundRect(ctx, x, y, w, h, r){
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
+
+function wrapLines(ctx, text, maxWidth){
+  var chars = Array.from(text);
+  var lines = [], line = '';
+  for (var i = 0; i < chars.length; i++){
+    var test = line + chars[i];
+    if (ctx.measureText(test).width > maxWidth && line){
+      lines.push(line);
+      line = chars[i];
+    } else {
+      line = test;
+    }
+  }
+  if (line) lines.push(line);
+  return lines;
+}
+
+function drawSpaced(ctx, text, cx, y, spacing){
+  var chars = Array.from(text);
+  var total = 0, i;
+  for (i = 0; i < chars.length; i++) total += ctx.measureText(chars[i]).width + spacing;
+  total -= spacing;
+  var x = cx - total / 2;
+  var prevAlign = ctx.textAlign;
+  ctx.textAlign = 'left';
+  for (i = 0; i < chars.length; i++){
+    ctx.fillText(chars[i], x, y);
+    x += ctx.measureText(chars[i]).width + spacing;
+  }
+  ctx.textAlign = prevAlign;
+}
+
+function drawCloudMotif(ctx, x, y, s, alpha){
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.scale(s, s);
+  ctx.strokeStyle = 'rgba(245,217,138,' + alpha + ')';
+  ctx.lineWidth = 3.2;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.arc(-34, 8, 21, Math.PI * 0.86, Math.PI * 2.12);
+  ctx.arc(2, -4, 29, Math.PI * 0.96, Math.PI * 2.04);
+  ctx.arc(42, 6, 19, Math.PI * 1.02, Math.PI * 2.0);
+  ctx.moveTo(-58, 28);
+  ctx.lineTo(64, 28);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(70, 12, 13, Math.PI * 0.55, Math.PI * 1.95);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawSeal(ctx, x, y, s){
+  ctx.save();
+  ctx.fillStyle = '#C0392B';
+  roundRect(ctx, x, y, s, s, 8);
+  ctx.fill();
+  ctx.fillStyle = 'rgba(255,255,255,.93)';
+  ctx.font = '500 ' + Math.round(s * 0.34) + 'px ' + FONT_KAI;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('中', x + s / 2, y + s * 0.30);
+  ctx.fillText('秋', x + s / 2, y + s * 0.71);
+  ctx.restore();
+}
+
+function drawCard(text){
+  var W = 1080, H = 1440;
+  var cv = $('cardCanvas');
+  cv.width = W; cv.height = H;
+  var ctx = cv.getContext('2d');
+  var i;
+
+  // 底
+  var bg = ctx.createLinearGradient(0, 0, W * 0.35, H);
+  bg.addColorStop(0, '#12294d');
+  bg.addColorStop(0.34, '#0B1D3A');
+  bg.addColorStop(1, '#061323');
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, W, H);
+
+  // 月晕
+  var cx = 540, cy = 268, r = 100;
+  var halo = ctx.createRadialGradient(cx, cy, 20, cx, cy, 620);
+  halo.addColorStop(0, 'rgba(245,217,138,.30)');
+  halo.addColorStop(0.28, 'rgba(245,217,138,.10)');
+  halo.addColorStop(1, 'rgba(245,217,138,0)');
+  ctx.fillStyle = halo;
+  ctx.beginPath(); ctx.arc(cx, cy, 620, 0, Math.PI * 2); ctx.fill();
+
+  // 星
+  for (i = 0; i < 90; i++){
+    var sx = Math.random() * W;
+    var sy = Math.random() * H * 0.9;
+    var sr = Math.random() < 0.86 ? 1.4 : 2.4;
+    ctx.fillStyle = 'rgba(232,238,247,' + (0.06 + Math.random() * 0.34).toFixed(2) + ')';
+    ctx.beginPath(); ctx.arc(sx, sy, sr, 0, Math.PI * 2); ctx.fill();
+  }
+
+  // 月
+  var mg = ctx.createRadialGradient(cx - 34, cy - 38, 8, cx, cy, r);
+  mg.addColorStop(0, '#FFFBE9');
+  mg.addColorStop(0.22, '#FDF3D5');
+  mg.addColorStop(0.55, '#F5D98A');
+  mg.addColorStop(0.82, '#E2C67C');
+  mg.addColorStop(1, '#C9AE6E');
+  ctx.save();
+  ctx.shadowColor = 'rgba(245,217,138,.55)';
+  ctx.shadowBlur = 90;
+  ctx.fillStyle = mg;
+  ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
+
+  // 月面斑驳（软斑，避免硬边圆点）
+  function blot(bx, by, br, a){
+    var g2 = ctx.createRadialGradient(bx, by, 0, bx, by, br);
+    g2.addColorStop(0, 'rgba(166,136,74,' + a + ')');
+    g2.addColorStop(0.55, 'rgba(166,136,74,' + (a * 0.5).toFixed(3) + ')');
+    g2.addColorStop(1, 'rgba(166,136,74,0)');
+    ctx.fillStyle = g2;
+    ctx.beginPath(); ctx.arc(bx, by, br, 0, Math.PI * 2); ctx.fill();
+  }
+  blot(cx + 36, cy - 26, 52, 0.13);
+  blot(cx - 28, cy + 30, 62, 0.10);
+  blot(cx + 44, cy + 46, 38, 0.08);
+
+  // 云纹
+  drawCloudMotif(ctx, 214, 462, 1.5, 0.13);
+  drawCloudMotif(ctx, 250, 1298, 1.6, 0.09);
+  drawCloudMotif(ctx, 196, 1160, 1.05, 0.07);
+
+  // 边框
+  ctx.strokeStyle = 'rgba(245,217,138,.16)';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(42, 42, W - 84, H - 84);
+  ctx.strokeStyle = 'rgba(245,217,138,.46)';
+  ctx.lineWidth = 3;
+  var m = 42, L = 46;
+  var corners = [
+    [m, m, 1, 1], [W - m, m, -1, 1],
+    [m, H - m, 1, -1], [W - m, H - m, -1, -1]
+  ];
+  for (i = 0; i < corners.length; i++){
+    var c = corners[i];
+    ctx.beginPath();
+    ctx.moveTo(c[0] + c[2] * L, c[1]);
+    ctx.lineTo(c[0], c[1]);
+    ctx.lineTo(c[0], c[1] + c[3] * L);
+    ctx.stroke();
+  }
+
+  // 顶部称呼
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillStyle = 'rgba(245,217,138,.80)';
+  ctx.font = '300 38px ' + FONT_KAI;
+  drawSpaced(ctx, '致 亲爱的朋友', 540, 500, 11);
+
+  // 分隔
+  var dg = ctx.createLinearGradient(420, 0, 660, 0);
+  dg.addColorStop(0, 'rgba(245,217,138,0)');
+  dg.addColorStop(0.5, 'rgba(245,217,138,.55)');
+  dg.addColorStop(1, 'rgba(245,217,138,0)');
+  ctx.fillStyle = dg;
+  ctx.fillRect(420, 546, 240, 2);
+
+  // 祝福正文：逐级缩小字号，直到不出现「孤字成行」
+  var body = text || '愿你所念之人，都在身边';
+  var maxTextW = 812;
+  var sizes = [60, 56, 52, 46, 42, 36];
+  var size = sizes[0], lines = null;
+  for (i = 0; i < sizes.length; i++){
+    ctx.font = '400 ' + sizes[i] + 'px ' + FONT_KAI;
+    var tryLines = wrapLines(ctx, body, maxTextW);
+    var last = tryLines[tryLines.length - 1];
+    var ok = tryLines.length <= 4 && (tryLines.length === 1 || Array.from(last).length >= 4);
+    if (ok){ size = sizes[i]; lines = tryLines; break; }
+    if (i === sizes.length - 1){ size = sizes[i]; lines = tryLines; }
+  }
+  ctx.font = '400 ' + size + 'px ' + FONT_KAI;
+  lines = wrapLines(ctx, body, maxTextW);
+  if (lines.length > 4){
+    size = 34;
+    ctx.font = '400 ' + size + 'px ' + FONT_KAI;
+    lines = wrapLines(ctx, body, maxTextW);
+  }
+  var lh = size * 1.72;
+  var blockTop = 640;
+  var blockBottom = 1090;
+  var blockH = lines.length * lh;
+  var startY = blockTop + Math.max(0, (blockBottom - blockTop - blockH) / 2) + lh / 2;
+
+  var tg = ctx.createLinearGradient(0, startY - size, 0, startY + blockH);
+  tg.addColorStop(0, '#FFF8DE');
+  tg.addColorStop(0.38, '#F5D98A');
+  tg.addColorStop(0.68, '#E0C078');
+  tg.addColorStop(1, '#F7E7B4');
+
+  ctx.save();
+  ctx.shadowColor = 'rgba(245,217,138,.42)';
+  ctx.shadowBlur = 28;
+  ctx.fillStyle = tg;
+  for (i = 0; i < lines.length; i++){
+    drawSpaced(ctx, lines[i], 540, startY + i * lh, 4);
+  }
+  ctx.restore();
+
+  // 落款诗
+  ctx.font = '300 33px ' + FONT_KAI;
+  ctx.fillStyle = 'rgba(245,217,138,.74)';
+  drawSpaced(ctx, '但愿人长久，千里共婵娟', 540, 1196, 5);
+
+  // 日期
+  ctx.font = '300 24px ' + FONT_SERIF;
+  ctx.fillStyle = 'rgba(245,217,138,.42)';
+  drawSpaced(ctx, '中秋 · ' + new Date().getFullYear(), 540, 1288, 6);
+
+  // 朱红印章
+  drawSeal(ctx, 900, 1258, 92);
+
+  return cv;
+}
+
+var cardBuilt = false;
+var cardReady = false;      // 图片已解码
+var cardWanted = false;     // 已经到该露面的时刻
+var cardShown = false;
+
+function doRevealCard(){
+  if (cardShown) return;
+  cardShown = true;
+  var img = $('cardImg');
+  img.style.display = 'block';
+  $('cardActions').style.display = 'flex';
+  requestAnimationFrame(function(){
+    requestAnimationFrame(function(){ img.classList.add('in'); });
+  });
+}
+function revealCard(){
+  cardWanted = true;
+  if (cardReady) doRevealCard();
+}
+
+function buildCard(text){
+  if (cardBuilt) return;
+  cardBuilt = true;
+  try {
+    var cv = drawCard(text);
+    var url = cv.toDataURL('image/png');
+    var img = $('cardImg');
+    img.onload = function(){
+      cardReady = true;
+      if (cardWanted) doRevealCard();
+    };
+    img.onerror = function(){ toast('卡片生成失败，请刷新重试'); };
+    img.src = url;
+  } catch (err){
+    $('cardLocked').style.display = 'block';
+    $('cardLocked').textContent = '卡片没生成出来，换个浏览器再试试。';
+  }
+}
+$('saveBtn').addEventListener('click', function(){
+  var img = $('cardImg');
+  if (!img || !img.src) return;
+  try {
+    var a = doc.createElement('a');
+    a.href = img.src;
+    a.download = '中秋心意卡.png';
+    doc.body.appendChild(a);
+    a.click();
+    setTimeout(function(){ if (a.parentNode) a.parentNode.removeChild(a); }, 1000);
+    toast('已保存，微信里也可以长按图片');
+  } catch (err){
+    toast('请长按图片保存到相册');
+  }
+});
+
+/* ============================================================
+   10. 背景音乐（Web Audio 现场合成，无音频文件）
+   ============================================================ */
+var Music = (function(){
+  var ctx = null, master = null, droneGain = null, drone = null;
+  var on = false, timer = null, initialized = false;
+  var SCALE = [0, 2, 4, 7, 9, 12, 14, 16, 19, 21, 24];
+  var BASE = 220;
+
+  function init(){
+    var AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return false;
+    ctx = new AC();
+
+    master = ctx.createGain();
+    master.gain.value = 0;
+    master.connect(ctx.destination);
+
+    // 空间感
+    var delay = ctx.createDelay(1.0);
+    delay.delayTime.value = 0.36;
+    var fb = ctx.createGain();
+    fb.gain.value = 0.30;
+    var wet = ctx.createGain();
+    wet.gain.value = 0.28;
+    delay.connect(fb);
+    fb.connect(delay);
+    master.connect(delay);
+    delay.connect(wet);
+    wet.connect(ctx.destination);
+
+    // 低音埙
+    drone = ctx.createOscillator();
+    drone.type = 'sine';
+    drone.frequency.value = 110;
+    droneGain = ctx.createGain();
+    droneGain.gain.value = 0;
+    var lp = ctx.createBiquadFilter();
+    lp.type = 'lowpass';
+    lp.frequency.value = 520;
+    drone.connect(lp);
+    lp.connect(droneGain);
+    droneGain.connect(ctx.destination);
+    var lfo = ctx.createOscillator();
+    lfo.frequency.value = 0.16;
+    var lg = ctx.createGain();
+    lg.gain.value = 1.8;
+    lfo.connect(lg);
+    lg.connect(drone.frequency);
+    drone.start();
+    lfo.start();
+
+    initialized = true;
+    return true;
+  }
+
+  function pluck(f, t, g){
+    // 一条弦：基音 + 两个泛音，泛音衰减更快，模拟拨弦
+    var o1 = ctx.createOscillator(), o2 = ctx.createOscillator(), o3 = ctx.createOscillator();
+    o1.type = 'sine'; o2.type = 'sine'; o3.type = 'triangle';
+    o1.frequency.value = f;
+    o2.frequency.value = f * 2.002;
+    o3.frequency.value = f * 3.006;
+
+    var g1 = ctx.createGain(), g2 = ctx.createGain(), g3 = ctx.createGain();
+    g1.gain.value = 1; g2.gain.value = 0.26; g3.gain.value = 0.06;
+
+    var env = ctx.createGain();
+    env.gain.setValueAtTime(0.0001, t);
+    env.gain.linearRampToValueAtTime(g, t + 0.014);
+    env.gain.exponentialRampToValueAtTime(0.0006, t + 2.9);
+
+    o1.connect(g1); g1.connect(env);
+    o2.connect(g2); g2.connect(env);
+    o3.connect(g3); g3.connect(env);
+    env.connect(master);
+
+    g2.gain.setValueAtTime(0.26, t);
+    g2.gain.exponentialRampToValueAtTime(0.001, t + 1.1);
+    g3.gain.setValueAtTime(0.06, t);
+    g3.gain.exponentialRampToValueAtTime(0.001, t + 0.5);
+
+    o1.frequency.setValueAtTime(f * 1.005, t);
+    o1.frequency.exponentialRampToValueAtTime(f, t + 1.0);
+
+    var stop = t + 3.1;
+    o1.start(t); o2.start(t); o3.start(t);
+    o1.stop(stop); o2.stop(stop); o3.stop(stop);
+  }
+
+  function note(semi, t, g){
+    pluck(BASE * Math.pow(2, semi / 12), t, g);
+  }
+
+  function schedule(){
+    if (!on) return;
+    var t = ctx.currentTime + 0.06;
+    var s = SCALE[Math.floor(Math.random() * SCALE.length)];
+    note(s, t, 0.055 + Math.random() * 0.045);
+    if (Math.random() < 0.34){
+      var s2 = SCALE[Math.floor(Math.random() * SCALE.length)];
+      note(s2, t + 0.30, 0.032 + Math.random() * 0.026);
+    }
+    if (Math.random() < 0.18){
+      note(SCALE[Math.floor(Math.random() * SCALE.length)] + 12, t + 0.72, 0.018 + Math.random() * 0.016);
+    }
+    timer = setTimeout(schedule, 1500 + Math.random() * 2300);
+  }
+
+  function begin(){
+    var now = ctx.currentTime;
+    master.gain.cancelScheduledValues(now);
+    master.gain.setValueAtTime(Math.max(master.gain.value, 0.0001), now);
+    master.gain.linearRampToValueAtTime(0.5, now + 1.4);
+    droneGain.gain.cancelScheduledValues(now);
+    droneGain.gain.setValueAtTime(Math.max(droneGain.gain.value, 0.0001), now);
+    droneGain.gain.linearRampToValueAtTime(0.028, now + 4.5);
+    schedule();
+  }
+
+  function start(){
+    if (!initialized && !init()) return false;
+    on = true;
+    // 移动端 AudioContext 可能是 suspended，resume 之后再排音符，避免音符挤在一起
+    if (ctx.state === 'suspended' && ctx.resume){
+      if (ctx.resume().then) ctx.resume().then(begin, begin);
+      else begin();
+    } else {
+      begin();
+    }
+    return true;
+  }
+
+  function stop(){
+    if (!initialized) return;
+    on = false;
+    clearTimeout(timer);
+    var now = ctx.currentTime;
+    master.gain.cancelScheduledValues(now);
+    master.gain.setValueAtTime(Math.max(master.gain.value, 0.0001), now);
+    master.gain.linearRampToValueAtTime(0.0001, now + 1.0);
+    droneGain.gain.cancelScheduledValues(now);
+    droneGain.gain.setValueAtTime(Math.max(droneGain.gain.value, 0.0001), now);
+    droneGain.gain.linearRampToValueAtTime(0.0001, now + 1.3);
+  }
+
+  return {
+    toggle: function(){ return on ? (stop(), false) : (start(), true); },
+    isOn: function(){ return on; },
+    chime: function(){
+      if (!on || !initialized) return;
+      note(7, ctx.currentTime + 0.02, 0.05);
+      note(12, ctx.currentTime + 0.16, 0.036);
+    }
+  };
+})();
+
+var musicBtn = $('musicBtn');
+musicBtn.addEventListener('click', function(){
+  var nowOn = Music.toggle();
+  musicBtn.classList.toggle('on', nowOn);
+  musicBtn.setAttribute('aria-pressed', nowOn ? 'true' : 'false');
+  toast(nowOn ? '轻音乐已开启' : '已静音');
+});
+
+/* ============================================================
+   11. 转发提示：只在微信内置浏览器里显示
+   ============================================================ */
+(function shareTip(){
+  var tip = $('shareTip');
+  if (!tip) return;
+  if (/MicroMessenger/i.test(navigator.userAgent)) tip.removeAttribute('hidden');
+})();
+
+/* 页面切走时停掉飘灯，省电 */
+doc.addEventListener('visibilitychange', function(){
+  if (doc.hidden) stopAmbient();
+  else if (opened) startAmbient();
+});
+
+})();
+</script>
+</body>
+</html>
